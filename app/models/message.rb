@@ -5,10 +5,13 @@ class Message < ApplicationRecord
   after_commit :make_request, on: :create
   
   def make_request
-    Message.transaction do
+    Message.transaction do |o|
+      msg = Message.find(rand(Message.all.count))
       begin
         resp = NATS.connection.request "foo", "bar"
-        Rails.logger.info ">>>>>>>>>>>>>>>>>>>>>>>>>>> Got: #{resp}"
+        Rails.logger.info ">>>>>>>>>>> Thread:#{Thread.current.object_id} >>>>>>>>>>>>>>>> #{msg} --- Got: #{resp}"
+        msg.data = resp.data
+        msg.save!
       rescue => e
         Rails.logger.error "ERROR!!! #{e}"
       end

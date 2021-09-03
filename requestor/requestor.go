@@ -15,13 +15,13 @@ func main() {
 		log.Fatal(err)
 	}
 	nc.Subscribe("foo", func(m *nats.Msg) {
-		m.Respond([]byte("OK!"))
+		go m.Respond([]byte("OK!"))
 	})
 
 	for i := 0; i < 5; i++ {
 		hc := &http.Client{}
 		go func() {
-			for range time.NewTicker(200 * time.Millisecond).C {
+			for range time.NewTicker(100 * time.Millisecond).C {
 				body := bytes.NewBuffer([]byte("{}"))
 				resp, err := hc.Post("http://localhost:3000/messages", "application/json", body)
 				if err != nil {

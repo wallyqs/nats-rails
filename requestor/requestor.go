@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	nc.Subscribe("foo", func(m *nats.Msg) {
+	nc.Subscribe("foo.bar", func(m *nats.Msg) {
 		go m.Respond([]byte("OK!"))
 	})
 
@@ -23,13 +23,15 @@ func main() {
 		go func() {
 			for range time.NewTicker(100 * time.Millisecond).C {
 				body := bytes.NewBuffer([]byte("{}"))
+				a := time.Now()
 				resp, err := hc.Post("http://localhost:3000/messages", "application/json", body)
 				if err != nil {
 					log.Println("Error: ", err)
 					continue
 				}
+				duration := time.Since(a)
 				resp.Body.Close()
-				log.Println(resp.Status)
+				log.Println(duration, resp.Status)
 			}
 		}()
 	}
